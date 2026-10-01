@@ -27,6 +27,53 @@ A Python repository containing two separate Streamlit tools: a streamed chat dem
 
 The repository also includes `notebooke7f0cd3e02.ipynb`, an unrelated traffic severity experiment. It is not required by either Streamlit entry point. Email access, OAuth setup, and hosted model availability must be configured separately.
 
+## UML diagrams
+
+### Email export workflow
+
+The email-to-Excel application selects an IMAP or Gmail processor, previews fetched messages, and exports a workbook. The OpenAI chatbot is a separate entry point.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as email_to_excel_app.py
+    participant Processor as Email processor
+    participant Mailbox as IMAP or Gmail API
+    participant Export as ExcelExporter
+    User->>UI: Select mailbox connection and filters
+    UI->>Processor: Connect with chosen method
+    Processor->>Mailbox: Authenticate and fetch messages
+    Mailbox-->>Processor: Matching messages
+    Processor-->>UI: Parsed email records
+    UI-->>User: Preview records
+    User->>UI: Export selected records
+    UI->>Export: create_excel_buffer
+    Export->>Export: Build formatted workbook
+    Export-->>UI: XLSX buffer
+    UI-->>User: Download workbook
+```
+
+### Chat workflow
+
+The independent Streamlit chatbot sends conversation messages to OpenAI and displays streamed response chunks.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as streamlit_app.py
+    participant History as Streamlit session state
+    participant API as OpenAI
+    User->>UI: Submit a message
+    UI->>History: Append user message
+    History-->>UI: Conversation context
+    UI->>API: Create streaming chat completion
+    loop Response chunks
+        API-->>UI: Text delta
+        UI-->>User: Update displayed answer
+    end
+    UI->>History: Append assistant answer
+```
+
 ## Getting started
 
 ```bash
